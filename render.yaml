@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: farmtotable-catalog-service
+    runtime: docker
+    region: virginia
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: SERVICE_NAME
+        value: catalog-service
+      - key: DATABASE_URL
+        sync: false
+      - key: RABBITMQ_URL
+        sync: false
+      - key: INTERNAL_TOKEN
+        sync: false
+      - key: PRODUCER_SERVICE_URL
+        sync: false

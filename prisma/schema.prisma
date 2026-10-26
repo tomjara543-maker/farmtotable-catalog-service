@@ -1,0 +1,47 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id                String         @id @default(uuid())
+  producerId        String         @map("producer_id")
+  name              String
+  category          String
+  basePrice         Int            @map("base_price")
+  currentPrice      Int            @map("current_price")
+  requiresColdChain Boolean        @default(false) @map("requires_cold_chain")
+  seasonMonths      Int[]          @map("season_months")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  batches           HarvestBatch[]
+
+  @@index([producerId])
+  @@map("products")
+}
+
+model HarvestBatch {
+  id                String   @id @default(uuid())
+  productId         String   @map("product_id")
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  harvestDate       String   @map("harvest_date")
+  quantityKg        Float    @map("quantity_kg")
+  quantityAvailable Float    @map("quantity_available")
+  expiryEstimate    String   @map("expiry_estimate")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([productId, expiryEstimate])
+  @@map("harvest_batches")
+}
+
+model ProcessedEvent {
+  eventId     String   @id @map("event_id")
+  eventType   String   @map("event_type")
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@map("processed_events")
+}
