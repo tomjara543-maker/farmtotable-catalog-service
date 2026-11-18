@@ -19,7 +19,7 @@ const productSchema = z.object({
   seasonMonths: z.array(z.coerce.number()).default([]),
 });
 
-const batchSchema = z
+export const batchSchema = z
   .object({
     harvestDate: date("harvestDate"),
     expiryEstimate: date("expiryEstimate"),
@@ -27,7 +27,9 @@ const batchSchema = z
   })
   .refine((b) => b.expiryEstimate >= b.harvestDate, "La caducidad debe ser posterior a la cosecha");
 
-const isInSeason = (months: number[]) => months.length === 0 || months.includes(new Date().getMonth() + 1);
+export const isInSeason = (months: number[], month = new Date().getMonth() + 1) => months.length === 0 || months.includes(month);
+
+export const normalizeSeasonMonths = (months: number[]) => [...new Set(months.filter((m) => Number.isInteger(m) && m >= 1 && m <= 12))];
 
 async function availableKg(productIds: string[]) {
   const rows = await prisma.harvestBatch.groupBy({
@@ -77,7 +79,7 @@ export function catalogRoutes() {
         ...data,
         basePrice,
         currentPrice: basePrice,
-        seasonMonths: [...new Set(data.seasonMonths.filter((m) => Number.isInteger(m) && m >= 1 && m <= 12))],
+        seasonMonths: normalizeSeasonMonths(data.seasonMonths),
       },
     });
     publish("product.created", {
